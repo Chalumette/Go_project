@@ -8,9 +8,36 @@ import (
         "net"
         "os"
         "strings"
-        "time"
+	"io"
 )
+func handle_connection (connexion net.Conn){	
+	connexion.Write([]byte ("Chargez un fichier ? O/N\n"))
+	for {
+		netData, err := bufio.NewReader(connexion).ReadString('\n')
+                if err != nil {
+                      fmt.Println(err)
+                      return
+	        }
+		var reponse string 
+		reponse = strings.TrimSpace(string(netData)) 
+		switch reponse{
+		case "o","O":
+			fmt.Println("En attente de fichier...\n")
+			connexion.Write ([]byte ("Chargement de fichier à implémenter\n"))
+			io.WriteString(connexion, fmt.Sprintf("Chargemenet de fichier à implémenter\n"))
+		case "STOP":
+			connexion.Write ([]byte("Fermeture du serveur TCP"))
+			return
+		case "N", "n":
+			fmt.Println("Coucou")
+			connexion.Write ([]byte ("Aurevoir"))
+		default:
+			connexion.Write ([]byte ("Réponse invalide"))
+		}
 
+	}
+	connexion.Close()
+}
 func main() {
         arguments := os.Args
         if len(arguments) == 1 {
@@ -26,30 +53,15 @@ func main() {
         }
 	fmt.Println("En attente de connexion...")
 	defer auditeur_reseau.Close() //ferme le serveur à la fin du programme ie arrêt de l'écoute
-
-	connexion, err := auditeur_reseau.Accept()
-        if err != nil {
-                fmt.Println(err)
-                return
-        }
-	fmt.Println("Connexion établie")
-
-        for {
-                fmt.Println("Chargez un fichier ? O/N")
-		netData, err := bufio.NewReader(connexion).ReadString('\n')
-                if err != nil {
-                        fmt.Println(err)
-                        return
-                }
-                if strings.TrimSpace(string(netData)) == "STOP" {
-                        fmt.Println("Exiting TCP server!")
-                        return
-                }
-
-                fmt.Print("-> ", string(netData))
-                t := time.Now()
-                myTime := t.Format(time.RFC3339) + "\n"
-                connexion.Write([]byte(myTime))
-        }
+	for {
+		connexion, err := auditeur_reseau.Accept()
+        	if err != nil {
+                	fmt.Println(err)
+                	return
+        	}
+		fmt.Println("Connexion établie")
+        	go handle_connection (connexion)
+		
+	}
 }
     
