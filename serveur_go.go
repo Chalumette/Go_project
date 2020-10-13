@@ -1,4 +1,3 @@
-//Serveur en go qui affiche l'heure 
 //Nécessite un argument : le numéro du port TCP
 package main
 
@@ -11,28 +10,28 @@ import (
 	"io"
 )
 func handle_connection (connexion net.Conn){	
-	connexion.Write([]byte ("Chargez un fichier ? O/N\n"))
 	for {
+		io.WriteString(connexion, "Chargez un fichier ? O/N\n")
 		netData, err := bufio.NewReader(connexion).ReadString('\n')
-                if err != nil {
+		if err != nil {
                       fmt.Println(err)
                       return
 	        }
 		var reponse string 
-		reponse = strings.TrimSpace(string(netData)) 
+		reponse = strings.TrimSpace(string(netData))
+		fmt.Println(reponse)
 		switch reponse{
 		case "o","O":
 			fmt.Println("En attente de fichier...\n")
-			connexion.Write ([]byte ("Chargement de fichier à implémenter\n"))
-			io.WriteString(connexion, fmt.Sprintf("Chargemenet de fichier à implémenter\n"))
+			io.WriteString(connexion, "Chargemenet de fichier à implémenter\n")
 		case "STOP":
-			connexion.Write ([]byte("Fermeture du serveur TCP"))
+			fmt.Println ("Fermeture de la connexion")
 			return
 		case "N", "n":
-			fmt.Println("Coucou")
-			connexion.Write ([]byte ("Aurevoir"))
+			io.WriteString(connexion,"Aurevoir\n")
+			return
 		default:
-			connexion.Write ([]byte ("Réponse invalide"))
+			io.WriteString(connexion,"Réponse invalide\n")
 		}
 
 	}

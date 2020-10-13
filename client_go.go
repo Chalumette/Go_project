@@ -6,6 +6,7 @@ import (
         "net"
         "os"
         "strings"
+	"io"
 )
 
 func main() {
@@ -16,19 +17,20 @@ func main() {
         }
 
         port_connexion := arguments[1]
-        demande, err := net.Dial("tcp", port_connexion)
+        connexion_serveur, err := net.Dial("tcp", port_connexion)//réception des données du serveur
+	msg_affiche,_ := bufio.NewReader(connexion_serveur).ReadString('\n')//Convertit les données reçues en string
+	fmt.Print(msg_affiche)
 	if err != nil {
                 fmt.Println(err)
                 return
         }
 
         for {
-		reponse, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-                fmt.Fprintf(demande, reponse+"\n")
-
-                message, _ := bufio.NewReader(demande).ReadString('\n')
-                fmt.Print("->: " + message)
-                if strings.TrimSpace(string(reponse)) == "STOP" {
+		requete, _ := bufio.NewReader(os.Stdin).ReadString('\n')//on lis des entrées au clavier
+		io.WriteString(connexion_serveur, requete)
+		reponse_serveur,_:=bufio.NewReader(connexion_serveur).ReadString('\n')
+		fmt.Print(reponse_serveur)
+		if strings.TrimSpace(string(requete)) == "STOP" {
                         fmt.Println("TCP client exiting...")
                         return
                 }
